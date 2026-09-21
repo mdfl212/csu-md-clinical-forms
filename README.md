@@ -4,28 +4,38 @@
 
 Self-contained HTML apps (no backend). Open in Chrome or Edge. Data stays in the browser (`localStorage`).
 
-## Forms
+## Repository
+
+**https://github.com/mdfl212/csu-md-clinical-forms**
+
+## Forms (full sources)
+
+The complete single-file apps live under `forms/`:
 
 | File | Description |
 |------|-------------|
-| [`Dynamic_HnP.html`](Dynamic_HnP.html) | **Dynamic History & Physical** — context-aware H&P simulator. Demographics drive Pediatric / Gyn / Obstetric modules. Speech-to-text dictation, autosave, CSV + DOCX export. CSU medical red theme. |
-| [`Community_Health_Questionnaire.html`](Community_Health_Questionnaire.html) | Brgy. Abilan Health Center community assessment (CHQ). Guided + Classic + Dictation UIs, voice commands, CSV/DOCX. |
-| [`OBGYN_HxPE.html`](OBGYN_HxPE.html) | Obstetric History & Physical Examination — stepped form, LMP→AOG/EDC calc, ICD-10/11 search, DOCX export. |
-| [`Pediatric_HxPE.html`](Pediatric_HxPE.html) | Pediatric History & Physical — birth/feeding/milestones/immunization structure (UI shell). |
+| `forms/Dynamic_HnP.html` | **Dynamic History & Physical** — context-aware H&P simulator. Demographics drive Pediatric / Gyn / Obstetric modules. Speech-to-text, debounced autosave with Saved/Saving pill, CSV + DOCX export. CSU medical red theme. |
+| `forms/Community_Health_Questionnaire.html` | Brgy. Abilan Health Center community assessment (CHQ). Guided + Classic + Dictation UIs, voice commands, CSV/DOCX. |
+| `forms/OBGYN_HxPE.html` | Obstetric History & Physical — stepped form, LMP→AOG/EDC, ICD-10/11 search, DOCX. |
+| `forms/Pediatric_HxPE.html` | Pediatric History & Physical structure. |
 
-## Dynamic H&P highlights
+## Quick start
 
-1. **Demographics first** → auto-detects Pediatric (age < 18), Gynecologic (female 12–55), Obstetric (G-P / LMP / keywords).
-2. **Natural language input** — dictate or type; fields fill and flash.
-3. **Shared patient state** across steps; debounced autosave with "Saved / Saving…" indicator.
-4. **History vs PE** kept separate; incomplete items listed under Assessment.
-5. **Export** CSV (flat row) and Word (.doc HTML).
+```bash
+git clone https://github.com/mdfl212/csu-md-clinical-forms.git
+cd csu-md-clinical-forms
+# Open forms/Dynamic_HnP.html in Chrome or Edge
+```
 
-## Usage
+Or download individual HTML files from the `forms/` folder on GitHub and open them locally.
 
-1. Download or clone this repo.
-2. Open any `.html` file in a modern browser (Chrome/Edge recommended for speech recognition).
-3. No install or server required.
+## Dynamic H&P features
+
+1. Demographics first → auto Pediatric (age < 18), Gyn (female 12–55), Obstetric (G-P / LMP / keywords)
+2. Natural language dictation → structured fields
+3. Shared patient state + debounced autosave
+4. History vs PE separation; incomplete-items list
+5. CSV and Word export
 
 ## License
 
