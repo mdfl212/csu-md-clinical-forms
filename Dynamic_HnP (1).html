@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CSU SOM · MD201 · Dynamic History &amp; Physical</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+:root, html[data-theme="light"] {
+  --bg:#faf6ee; --bg2:#ffffff; --bg3:#f7f1e6; --bg4:#efe6d3;
+  --border:rgba(47,82,51,.10); --border2:rgba(47,82,51,.22);
+  --text:#2a1f18; --text2:#4a3d33; --text3:#7a6a58;
+  /* CSU MD medical red */
+  --gold:#A13D2C; --gold2:#8a3324; --gold-dim:rgba(161,61,44,.10); --gold-bg:#F2E4C7;
+  --ok:#2F5233; --err:#c0392b; --accent:#A13D2C; --subhead:#2F5233;
+  --shadow-sm:0 1px 2px rgba(80,40,20,.06),0 1px 3px rgba(80,40,20,.08);
+  --shadow-md:0 4px 12px rgba(80,40,20,.10); --shadow-lg:0 10px 32px rgba(80,40,20,.14);
+  --sidebar-bg:rgba(255,255,255,.96); --btn-hero-text:#ffffff;
+}
+html[data-theme="dark"] {
+  --bg:#0d0806; --bg2:#14100c; --bg3:#1c1712; --bg4:#251e17;
+  --border:rgba(217,164,65,.12); --border2:rgba(217,164,65,.24);
+  --text:#f5ede2; --text2:#b8a996; --text3:#7a6a58;
+  --gold:#D9A441; --gold2:#E8BE6C; --gold-dim:rgba(217,164,65,.15); --gold-bg:#2a1f17;
+  --ok:#7CB88A; --err:#e35b5b; --accent:#D9A441; --subhead:#7CB88A;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.5); --shadow-md:0 4px 14px rgba(0,0,0,.6); --shadow-lg:0 10px 32px rgba(0,0,0,.75);
+  --sidebar-bg:rgba(20,16,12,.96); --btn-hero-text:#0d0806;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;font-size:14.5px;line-height:1.6;min-height:100vh;transition:background .28s,color .28s}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.25}
+
+/* Sidebar */
+.sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--sb-w,240px);background:var(--sidebar-bg);backdrop-filter:blur(14px);border-right:1px solid var(--border2);z-index:900;display:flex;flex-direction:column;transition:width .28s cubic-bezier(.4,0,.2,1);overflow:hidden;box-shadow:1px 0 3px rgba(0,0,0,.04)}
+body.sb-collapsed .sidebar{--sb-w:64px}
+.sb-header{display:flex;align-items:center;gap:10px;padding:16px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-toggle{width:36px;height:36px;border-radius:8px;background:transparent;border:1px solid var(--border2);color:var(--gold);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.sb-toggle:hover{background:var(--gold-dim);border-color:var(--gold)}
+.sb-brand{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;white-space:nowrap;transition:opacity .15s}
+body.sb-collapsed .sb-brand{opacity:0}
+.sb-progress{padding:14px 18px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
+body.sb-collapsed .sb-progress{padding:14px 10px}
+.sb-progress-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--text3);margin-bottom:6px;display:flex;justify-content:space-between}
+body.sb-collapsed .sb-progress-label{opacity:0;height:0;margin:0}
+.sb-progress-track{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.sb-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:2px;transition:width .35s}
+.sb-menu{list-style:none;padding:8px;margin:0;flex:1;overflow-y:auto;overflow-x:hidden}
+.sb-step{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:8px;color:var(--text2);font-size:12px;cursor:pointer;transition:all .18s;white-space:nowrap;overflow:hidden;border:1px solid transparent;background:transparent;width:100%;text-align:left;font-family:inherit;margin-bottom:2px}
+.sb-step:hover{background:var(--gold-dim);color:var(--gold)}
+.sb-step.active{background:var(--gold-dim);color:var(--gold);border-color:rgba(161,61,44,.35);font-weight:600}
+.sb-step.completed .sb-num{background:var(--ok);color:#fff;border-color:var(--ok)}
+.sb-step.hidden-step{display:none}
+.sb-num{width:24px;height:24px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;flex-shrink:0;color:var(--text2);background:var(--bg3)}
+.sb-step.active .sb-num{background:var(--gold);color:#fff;border-color:var(--gold);transform:scale(1.08)}
+.sb-icon{font-size:15px;display:none;flex-shrink:0}
+body.sb-collapsed .sb-icon{display:block}
+body.sb-collapsed .sb-num{display:none}
+.sb-label{font-size:12px;opacity:1;transition:opacity .15s;overflow:hidden;text-overflow:ellipsis}
+body.sb-collapsed .sb-label{opacity:0;width:0}
+body.sb-collapsed .sb-step{justify-content:center;padding:10px 8px}
+.sb-footer{padding:10px 8px 14px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:4px}
+.sb-action{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:8px;color:var(--text2);font-size:12px;cursor:pointer;background:transparent;border:1px solid transparent;font-family:inherit;width:100%;text-align:left}
+.sb-action:hover{background:var(--gold-dim);color:var(--gold);border-color:rgba(161,61,44,.35)}
+.sb-action.danger{color:var(--err)}
+.sb-action.danger:hover{background:rgba(179,38,30,.08);border-color:rgba(179,38,30,.25)}
+body.sb-collapsed .sb-action{justify-content:center}
+body.sb-collapsed .sb-action .sb-label{opacity:0;width:0}
+
+/* Main */
+.main{padding:28px 36px 140px;max-width:1100px;margin:0 auto;position:relative;z-index:1;transition:padding-left .28s}
+body.sb-collapsed .main{padding-left:calc(64px + 36px)}
+body:not(.sb-collapsed) .main{padding-left:calc(240px + 36px)}
+.page-header{border-bottom:1px solid var(--border2);padding-bottom:18px;margin-bottom:22px;position:relative}
+.page-header::after{content:'';position:absolute;bottom:-1px;left:0;width:70px;height:2px;background:var(--gold)}
+.header-top{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;font-weight:600}
+.page-title{font-family:'Playfair Display',serif;font-size:clamp(22px,3vw,30px);font-weight:700;line-height:1.15}
+.page-title em{font-style:italic;color:var(--gold)}
+.page-sub{font-size:13px;color:var(--text2);font-style:italic;margin-top:4px}
+.context-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+
+/* Save pill */
+.save-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--text3);padding:4px 10px;
+  border:1px solid var(--border);border-radius:20px;
+  background:var(--bg3);transition:color .2s,border-color .2s;
+}
+.save-pill.saving{color:var(--gold);border-color:var(--gold)}
+.save-pill .save-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--ok);transition:background .2s;
+}
+.save-pill.saving .save-dot{background:var(--gold);animation:pulse 1s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Scroll top */
+.scroll-top{
+  position:fixed;bottom:28px;left:28px;width:40px;height:40px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:50;color:var(--text3);font-size:16px;
+  opacity:0;pointer-events:none;transition:all .2s;
+}
+body.sb-collapsed .scroll-top{left:calc(64px + 16px)}
+body:not(.sb-collapsed) .scroll-top{left:calc(240px + 16px)}
+.scroll-top.visible{opacity:1;pointer-events:all}
+.scroll-top:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+@media(max-width:768px){
+  .scroll-top{left:16px!important;bottom:80px}
+  .header-actions .btn{padding:6px 10px;font-size:10px}
+}
+.ctx-badge{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:12px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2)}
+.ctx-badge.active{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);font-weight:600}
+.ctx-badge.ped{--c:#2a7a4f}.ctx-badge.ped.active{background:rgba(42,122,79,.12);border-color:var(--c);color:var(--c)}
+.ctx-badge.gyn{--c:#8a3a6a}.ctx-badge.gyn.active{background:rgba(138,58,106,.12);border-color:var(--c);color:var(--c)}
+.ctx-badge.ob{--c:#a13d2c}.ctx-badge.ob.active{background:rgba(161,61,44,.12);border-color:var(--c);color:var(--c)}
+
+/* Steps */
+.form-step{display:none}
+.form-step.active{display:block;animation:slideIn .3s ease-out}
+@keyframes slideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.step-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.step-badge{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:var(--gold-bg);color:var(--gold);padding:4px 12px;border-radius:20px;border:1px solid rgba(161,61,44,.28);font-weight:600}
+.step-title{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;flex:1;min-width:160px}
+.step-counter{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3)}
+.section-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:22px 26px;box-shadow:var(--shadow-sm)}
+.form-row{display:flex;flex-wrap:wrap;gap:12px 16px;margin-bottom:12px;align-items:flex-start}
+.form-group{display:flex;flex-direction:column;flex:1 0 160px;min-width:120px}
+.form-group.full{flex:1 0 100%}
+.form-group.half{flex:1 0 calc(50% - 8px);min-width:160px}
+.form-group.third{flex:1 0 calc(33.33% - 12px);min-width:120px}
+.form-group label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.form-group label .prov{font-size:8px;letter-spacing:0;text-transform:none;color:var(--text3);opacity:.7;margin-left:4px}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:'Source Serif 4',Georgia,serif;font-size:13.5px;padding:8px 11px;width:100%;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(161,61,44,.14);background:var(--bg2)}
+input[readonly]{background:var(--gold-bg);color:var(--gold);font-weight:600;cursor:default}
+textarea{resize:vertical;min-height:52px;line-height:1.5}
+.incomplete{border-color:rgba(161,61,44,.4);background:repeating-linear-gradient(-45deg,transparent,transparent 4px,rgba(161,61,44,.04) 4px,rgba(161,61,44,.04) 8px)}
+.field-flash{animation:flash .9s ease}
+@keyframes flash{0%{box-shadow:0 0 0 3px var(--gold-dim)}100%{box-shadow:none}}
+
+/* Module gates */
+.module-gate{display:none}
+.module-gate.visible{display:block}
+
+/* Dictation panel */
+.dict-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:18px 22px;margin-bottom:20px;border-top:3px solid var(--gold);box-shadow:var(--shadow-sm)}
+.dict-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--gold);margin-bottom:4px}
+.dict-sub{font-size:12.5px;color:var(--text2);margin-bottom:12px}
+.dict-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.dict-status{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-left:auto}
+.dict-status.listening{color:var(--err)}
+.dict-box{min-height:110px;max-height:220px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:12px 14px;font-size:14px;line-height:1.6;outline:none;white-space:pre-wrap}
+.dict-box:empty:before{content:attr(data-placeholder);color:var(--text3);font-style:italic;white-space:pre-wrap}
+.dict-box:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(161,61,44,.12)}
+.extracted-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:28px}
+.ext-tag{font-size:11.5px;padding:3px 10px;border-radius:12px;background:rgba(46,125,79,.12);border:1px solid var(--ok);color:var(--ok);font-weight:500}
+.tpl-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;align-items:center}
+.tpl-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.tpl-chip{font-size:11px;padding:4px 10px;border-radius:14px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer}
+.tpl-chip:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+
+/* Buttons */
+.btn{padding:7px 14px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;cursor:pointer;transition:all .15s}
+.btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-dim)}
+.btn.primary{background:var(--gold-dim);border-color:var(--gold);color:var(--gold);font-weight:600}
+.btn.blue{background:var(--gold);border-color:var(--gold);color:var(--btn-hero-text);font-weight:600}
+.btn.danger:hover{border-color:var(--err);color:var(--err);background:rgba(179,38,30,.08)}
+
+/* Fixed actions */
+.fixed-actions{position:fixed;bottom:22px;right:22px;z-index:1000;display:flex;flex-direction:column;gap:10px;align-items:flex-end;pointer-events:none}
+.fixed-actions>*{pointer-events:auto}
+.action-row{display:flex;align-items:center;gap:8px}
+.action-label{font-family:'JetBrains Mono',monospace;font-size:10px;padding:7px 12px;border-radius:20px;background:var(--sidebar-bg);border:1px solid rgba(161,61,44,.28);color:var(--gold);box-shadow:var(--shadow-md);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.circle-btn{width:50px;height:50px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;transition:transform .15s,box-shadow .15s}
+.circle-btn:hover{transform:translateY(-2px) scale(1.05)}
+.circle-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.circle-back{width:42px;height:42px;background:var(--bg2);border:1px solid var(--border2);color:var(--text2);font-size:15px}
+.circle-next{width:54px;height:54px;background:linear-gradient(135deg,#c04838,#A13D2C);color:var(--btn-hero-text);box-shadow:0 6px 18px rgba(161,61,44,.35);font-size:20px}
+.circle-next.complete{background:linear-gradient(135deg,#6bcb8a,#4cad6e);color:#fff}
+.circle-docx{width:56px;height:56px;background:var(--bg2);border:2px solid var(--gold);color:var(--gold);font-size:10px;box-shadow:0 0 0 4px rgba(161,61,44,.08)}
+.circle-docx .docx-text{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700}
+
+/* Guidance */
+.guidance{margin-top:14px;padding:12px 14px;background:var(--gold-bg);border:1px solid rgba(161,61,44,.22);border-radius:6px;font-size:12.5px;color:var(--text2)}
+.guidance strong{color:var(--gold)}
+.guidance ul{margin:6px 0 0 18px}
+.guidance li{margin:2px 0}
+
+/* Toast */
+.toast{position:fixed;bottom:140px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:12px 22px;color:var(--text);font-size:13px;z-index:2000;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:var(--shadow-lg);max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(76,173,110,.5)}
+.toast.err{border-color:rgba(179,38,30,.4)}
+
+/* Mobile */
+.mobile-menu-btn{display:none;position:fixed;top:12px;left:12px;width:40px;height:40px;border-radius:10px;background:var(--bg2);border:1px solid var(--border2);color:var(--gold);font-size:18px;align-items:center;justify-content:center;cursor:pointer;z-index:1000;box-shadow:var(--shadow-md)}
+.sb-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:880;opacity:0;pointer-events:none;transition:opacity .28s}
+body.sb-mobile-open .sb-backdrop{opacity:1;pointer-events:all}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);width:240px!important;transition:transform .28s}
+  .sidebar.open{transform:translateX(0)}
+  body.sb-collapsed .sidebar{--sb-w:240px}
+  body.sb-collapsed .sb-label,body.sb-collapsed .sb-brand,body.sb-collapsed .sb-progress-label{opacity:1;width:auto;height:auto}
+  body.sb-collapsed .sb-num{display:flex}body.sb-collapsed .sb-icon{display:none}
+  body.sb-collapsed .sb-step{justify-content:flex-start;padding:9px 10px}
+  .main{padding:18px 14px 150px!important}
+  .mobile-menu-btn{display:flex!important}
+  .form-group.half,.form-group.third{flex:1 0 100%}
+  .fixed-actions{bottom:14px;right:14px}
+  .circle-btn{width:46px;height:46px}.circle-back{width:38px;height:38px}.circle-next{width:50px;height:50px}
+}
+
+/* Print */
+@media print{
+  body{background:#fff;color:#000;font-size:11px}
+  body::before,.sidebar,.fixed-actions,.scroll-top,.toast,.dict-panel,.header-actions,
+  .mobile-menu-btn,.sb-backdrop,.guidance{display:none!important}
+  .main{padding:0!important;max-width:none}
+  .form-step{display:block!important;page-break-inside:avoid;margin-bottom:12px}
+  .section-card{box-shadow:none;border:1px solid #ccc;padding:12px}
+  .page-header{border-bottom:2px solid #333;margin-bottom:12px}
+  input,textarea,select{border:1px solid #999;background:transparent}
+}
+</style>
+<script>
+(function(){try{var t=localStorage.getItem('dhnp-theme')||'light';document.documentElement.setAttribute('data-theme',t)}catch(e){document.documentElement.setAttribute('data-theme','light')}})();
+</script>
+</head>
+<body class="sb-collapsed">
+
+<button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">☰</button>
+<div class="sb-backdrop" id="sbBackdrop"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-header">
+    <button class="sb-toggle" id="sbToggle" title="Toggle sidebar">☰</button>
+    <span class="sb-brand">CSU MD201</span>
+  </div>
+  <div class="sb-progress">
+    <div class="sb-progress-label"><span>Progress</span><span id="sbProgressText">0 / 0</span></div>
+    <div class="sb-progress-track"><div class="sb-progress-fill" id="sbProgressFill"></div></div>
+  </div>
+  <ul class="sb-menu" id="sbMenu"></ul>
+  <div class="sb-footer">
+    <button type="button" class="sb-action" id="themeBtn"><span class="sb-icon" id="themeIcon">🌙</span><span class="sb-label" id="themeLabel">Dark Mode</span></button>
+    <button type="button" class="sb-action danger" id="resetBtn"><span class="sb-icon">🔄</span><span class="sb-label">Reset</span></button>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="page-header">
+    <div class="header-top">
+      <div>
+        <div class="eyebrow">CSU SOM · Batch · MD201 · Clinical Skills</div>
+        <h1 class="page-title"><em>Dynamic</em> History &amp; Physical</h1>
+        <p class="page-sub">Problem-Oriented Medical Record · Context-Aware H&amp;P Simulator</p>
+      </div>
+      <div class="header-actions">
+        <span class="save-pill" id="savePill"><span class="save-dot"></span><span id="saveText">Saved</span></span>
+        <button type="button" class="btn" id="csvBtn" title="Export CSV">📊 CSV</button>
+        <button type="button" class="btn" onclick="window.print()" title="Print / PDF">🖨 Print</button>
+      </div>
+    </div>
+    <div class="context-badges" id="contextBadges">
+      <span class="ctx-badge" id="badgeAdult">Adult</span>
+      <span class="ctx-badge ped" id="badgePed">Pediatric</span>
+      <span class="ctx-badge gyn" id="badgeGyn">Gynecologic</span>
+      <span class="ctx-badge ob" id="badgeOb">Obstetric</span>
+    </div>
+  </header>
+
+  <!-- Dictation always available at top when in dictation view, but we keep a compact version -->
+  <div class="dict-panel" id="dictPanel">
+    <div class="dict-title">🎙 Natural Clinical Input</div>
+    <div class="dict-sub">Dictate or type. The system extracts demographics and clinical facts, activates relevant modules, and fills structured fields. Data is shared across all steps.</div>
+    <div class="dict-toolbar">
+      <button type="button" class="btn primary" id="dictMicBtn">🎙 Start Dictation</button>
+      <button type="button" class="btn" id="dictParseBtn">⚡ Parse &amp; Fill</button>
+      <button type="button" class="btn" id="dictClearBtn">🗑 Clear</button>
+      <span class="dict-status" id="dictStatus">Ready</span>
+    </div>
+    <div id="dictBox" class="dict-box" contenteditable="true" role="textbox" data-placeholder="Example:
+“This is a 7-year-old boy. Mother is the informant. He has had fever for 3 days, decreased appetite but still drinking well.”
+
+or
+
+“28-year-old female, G2P1, LMP was 6 weeks ago, presents with lower abdominal pain and missed period.”"></div>
+    <div class="tpl-row">
+      <span class="tpl-label">Templates:</span>
+      <button type="button" class="tpl-chip" data-tpl="This is a ___-year-old (boy/girl). Informant is the mother. Chief complaint is ___ for ___ days.">Pediatric</button>
+      <button type="button" class="tpl-chip" data-tpl="___-year-old female, G_P_, LMP ___, presents with ___.">OB / Gyn</button>
+      <button type="button" class="tpl-chip" data-tpl="___-year-old (male/female) with chief complaint of ___ for ___.">Adult</button>
+    </div>
+    <div class="extracted-tags" id="extractedTags"><span style="font-size:12px;color:var(--text3);font-style:italic">Matched fields appear here…</span></div>
+  </div>
+
+  <form id="hnForm" autocomplete="off">
+
+    <!-- STEP 0: Demographics (always visible) -->
+    <section class="form-step active" data-step="0" data-id="demo" data-title="Demographics" data-icon="👤">
+      <div class="step-header">
+        <span class="step-badge">Step 1</span>
+        <h2 class="step-title">Patient Demographics</h2>
+        <span class="step-counter" data-counter></span>
+      </div>
+      <div class="section-card">
+        <div class="form-row">
+          <div class="form-group half"><label>Name</label><input id="fName" placeholder="Full name" /></div>
+          <div class="form-group half"><label>Hospital / Chart #</label><input id="fHosp" placeholder="MR #" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group third"><label>Age (years)</label><input id="fAge" type="number" min="0" max="120" placeholder="e.g. 7" /></div>
+          <div class="form-group third"><label>Birthdate</label><input id="fBirthdate" type="date" /></div>
+          <div class="form-group third"><label>Sex</label>
+            <select id="fSex"><option value="">—</option><option>Male</option><option>Female</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group third"><label>Gender (if relevant)</label><input id="fGender" placeholder="optional" /></div>
+          <div class="form-group third"><label>Civil Status</label><input id="fCivil" placeholder="Single / Married / …" /></div>
+          <div class="form-group third"><label>Date / Time of Encounter</label><input id="fEncounter" type="datetime-local" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full"><label>Address / Location</label><input id="fAddress" placeholder="Street, City, Province" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half"><label>Occupation</label><input id="fOccupation" placeholder="or school grade if child" /></div>
+          <div class="form-group half"><label>Contact No.</label><input id="fContact" placeholder="e.g. 0917-…" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half"><label>Informant</label><input id="fInformant" placeholder="Patient / Mother / Father / Guardian" /></div>
+          <div class="form-group half"><label>Reliability</label><input id="fReliability" placeholder="Good / Fair / Poor" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full"><label>Clinical Context / Notes (optional free text)</label>
+            <textarea id="fContextNote" rows="2" placeholder="e.g. known pregnancy, trauma, psychiatric complaint…"></textarea>
+          </div>
+        </div>
+        <div class="guidance" id="demoGuidance">
+          <strong>Context detection</strong> runs automatically from Age + Sex + keywords.
+          <ul>
+            <li>Age &lt; 18 → Pediatric modules activate</li>
+            <li>Female 12–55 → Gynecologic options available</li>
+            <li>Pregnancy keywords / G-P / LMP → Obstetric pathway</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 1: Chief Complaint & HPI (always) -->
+    <section class="form-step" data-step="1" data-id="hpi" data-title="CC & HPI" data-icon="📋">
+      <div class="step-header">
+        <span class="step-badge">History</span>
+        <h2 class="step-title">Chief Complaint &amp; History of Present Illness</h2>
+        <span class="step-counter" data-counter></span>
+      </div>
+      <div class="section-card">
+        <div class="form-row"><div class="form-group full"><label>Chief Complaint <span class="prov" data-prov="fCc"></span></label><textarea id="fCc" rows="2" placeholder="Primary reason for consult"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>History of Present Illness <span class="prov" data-prov="fHpi"></span></label><textarea id="fHpi" rows="6" placeholder="Onset, course, associated symptoms, treatments, pertinent negatives"></textarea></div></div>
+        <div class="guidance" id="hpiGuidance"><strong>Suggested next questions</strong> appear here after you enter a chief complaint.</div>
+      </div>
+    </section>
+
+    <!-- STEP 2: General History (always) -->
+    <section class="form-step" data-step="2" data-id="genhx" data-title="General History" data-icon="📖">
+      <div class="step-header">
+        <span class="step-badge">History</span>
+        <h2 class="step-title">Past / Family / Social History</h2>
+        <span class="step-counter" data-counter></span>
+      </div>
+      <div class="section-card">
+        <div class="form-row"><div class="form-group full"><label>Past Medical History</label><textarea id="fPmh" rows="2" placeholder="Illnesses, hospitalizations, chronic conditions"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Past Surgical History</label><textarea id="fPsh" rows="2" placeholder="Operations, dates, complications"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Medications</label><textarea id="fMeds" rows="2" placeholder="Current meds, doses"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Allergies</label><textarea id="fAllergies" rows="1" placeholder="Drug / food / environmental; reaction"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Family History</label><textarea id="fFh" rows="2" placeholder="Relevant familial / genetic conditions"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Personal / Social History</label><textarea id="fSh" rows="2" placeholder="Living situation, occupation, habits, exposures"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Immunization History (when relevant)</label><textarea id="fImm" rows="2" placeholder="Status / last vaccines / source"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Review of Systems</label><textarea id="fRos" rows="3" placeholder="Pertinent positives and negatives by system"></textarea></div></div>
+      </div>
+    </section>
+
+    <!-- STEP 3: Pediatric History (conditional) -->
+    <section class="form-step module-gate" data-step="3" data-id="pedhx" data-title="Pediatric Hx" data-icon="🧒" data-module="pediatric">
+      <div class="step-header">
+        <span class="step-badge">Pediatric</span>
+        <h2 class="step-title">Birth, Feeding &amp; Developmental History</h2>
+        <span class="step-counter" data-counter></span>
+      </div>
+      <div class="section-card">
+        <div class="form-row">
+          <div class="form-group third"><label>Maternal Age (at pregnancy)</label><input id="fMatAge" type="number" placeholder="years" /></div>
+          <div class="form-group third"><label>Gravidity / Parity (maternal)</label><input id="fMatGP" placeholder="e.g. G2P2" /></div>
+          <div class="form-group third"><label>Prenatal Care</label><input id="fPnc" placeholder="e.g. 8 visits" /></div>
+        </div>
+        <div class="form-row"><div class="form-group full"><label>Prenatal Complications</label><textarea id="fPrenatalComp" rows="2" placeholder="Infections, HTN, GDM, bleeding…"></textarea></div></div>
+        <div class="form-row">
+          <div class="form-group third"><label>AOG at Birth</label><input id="fAogBirth" placeholder="e.g. 39w" /></div>
+          <div class="form-group third"><label>Mode of Delivery</label><input id="fModeDelivery" placeholder="NSD / CS / …" /></div>
+          <div class="form-group third"><label>Place / Attended by</label><input id="fPlaceDelivery" placeholder="Hospital / Home" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group third"><label>Birth Weight</label><input id="fBirthWeight" placeholder="g or kg" /></div>
+          <div class="form-group third"><label>Birth Length</label><input id="fBirthLength" placeholder="cm" /></div>
+          <div class="form-group third"><label>APGAR (1 / 5 min)</label><input id="fApgar" placeholder="e.g. 8/9" /></div>
+        </div>
+        <div class="form-row"><div class="form-group full"><label>Neonatal Complications</label><textarea id="fNeoComp" rows="2" placeholder="Jaundice, RDS, NICU, infection…"></textarea></div></div>
+        <div class="form-row">
+          <div class="form-group half"><label>Breastfeeding</label><input id="fBf" placeholder="Exclusive until… / mixed / none" /></div>
+          <div class="form-group half"><label>Formula</label><input id="fFormula" placeholder="Brand, started at…" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half"><label>Weaning / Complementary foods</label><input id="fWeaning" placeholder="Age started, first foods" /></div>
+          <div class="form-group half"><label>Current Diet</label><input id="fCurrentDiet" placeholder="Typical intake, appetite" /></div>
+        </div>
+        <div class="form-row"><div class="form-group full"><label>Gross Motor</label><textarea id="fGrossMotor" rows="1" placeholder="sat at…, walked at…"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Fine Motor</label><textarea id="fFineMotor" rows="1" placeholder="pincer, scribbling…"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Language / Speech</label><textarea id="fLanguage" rows="1" placeholder="first words, phrases…"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Personal / Social</label><textarea id="fSocial" rows="1" placeholder="smile, stranger anxiety…"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Immunization Status (pediatric detail)</label><textarea id="fPedImm" rows="2" placeholder="FIC? Card seen? Missed doses?"></textarea></div></div>
+      </div>
+    </section>
+
+    <!-- STEP 4: Gynecologic History (conditional) -->
+    <section class="form-step module-gate" data-step="4" data-id="gynhx" data-title="Gynecologic Hx" data-icon="♀" data-module="gyn">
+      <div class="step-header">
+        <span class="step-badge">Gynecologic</span>
+        <h2 class="step-title">Menstrual &amp; Gynecologic History</h2>
+        <span class="step-counter" data-counter></span>
+      </div>
+      <div class="section-card">
+        <div class="form-row">
+          <div class="form-group third"><label>Menarche (age)</label><input id="fMenarche" type="number" placeholder="years" /></div>
+          <div class="form-group third"><label>Cycle Regularity</label><input id="fRegular" placeholder="Regular / Irregular" /></div>
+          <div class="form-group third"><label>Duration (days)</label><input id="fDuration" placeholder="e.g. 4–5" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group third"><label>Pads / day</label><input id="fPads" placeholder="e.g. 3–4" /></div>
+          <div class="form-group third"><label>Dysmenorrhea</label><input id="fDysmenorrhea" placeholder="None / Mild / Severe" /></div>
+          <div class="form-group third"><label>LMP</label><input id="fLmp" type="date" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half"><label>Sexual History (when appropriate)</label><input id="fSexHx" placeholder="Partners, age of first contact…" /></div>
+          <div class="form-group half"><label>Contraception</label><input id="fOcp" placeholder="None / OCP / IUD / …" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half"><label>Abnormal Uterine Bleeding</label><input id="fAub" placeholder="None / describe" /></div>
+          <div class="form-group half"><label>Cervical Screening</label><input id="fPap" placeholder="Last Pap / HPV status" /></div>
+        </div>
+        <div class="form-row"><div class="form-group full"><label>Previous Gynecologic Conditions</label><textarea id="fGynPrev" rows="2" placeholder="Infections, procedures, surgeries…"></textarea></div></div>
+      </div>
+    </section>
+
+    <!-- STEP 5: Obstetric History (conditional) -->
+    <section class="form-step module-gate" data-step="5" data-id="obhx" data-title="Obstetric Hx" data-icon="🤰" data-module="ob">
+      <div class="step-header">
+        <span class="step-badge">Obstetric</span>
+        <h2 class="step-title">Obstetric History &amp; Current Pregnancy</h2>
+        <span class="step-counter" data-counter></span>
+      </div>
+      <div class="section-card">
+        <div class="form-row">
+          <div class="form-group third"><label>Gravida (G)</label><input id="fGravida" type="number" min="0" /></div>
+          <div class="form-group third"><label>Para (P)</label><input id="fPara" type="number" min="0" /></div>
+          <div class="form-group third"><label>TPAL (optional)</label><input id="fTpal" placeholder="e.g. 1-0-0-1" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half"><label>AOG (auto from LMP)</label><input id="fAog" readonly placeholder="—" /></div>
+          <div class="form-group half"><label>EDC (auto from LMP)</label><input id="fEdc" readonly placeholder="—" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half"><label>Prenatal Visits</label><input id="fPncCount" placeholder="Number / where" /></div>
+          <div class="form-group half"><label>Pregnancy Complications</label><input id="fPregComp" placeholder="None / list" /></div>
+        </div>
+        <div class="form-row"><div class="form-group full"><label>Previous Pregnancy Outcomes</label><textarea id="fPrevPreg" rows="2" placeholder="Year, mode, place, complications, FMC…"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Current Pregnancy Notes</label><textarea id="fCurrPreg" rows="2" placeholder="Symptoms, quickening, fetal movement…"></textarea></div></div>
+      </div>
+    </section>
+
+    <!-- STEP 6: Physical Examination (always, with age-adapted fields) -->
+    <section class="form-step" data-step="6" data-id="pe" data-title="Physical Exam" data-icon="🩺">
+      <div class="step-header">
+        <span class="step-badge">Examination</span>
+        <h2 class="step-title">Physical Examination</h2>
+        <span class="step-counter" data-counter></span>
+      </div>
+      <div class="section-card">
+        <p style="font-size:12.5px;color:var(--text2);margin-bottom:12px"><strong>Objective findings only.</strong> Statements from the patient belong in History, not here.</p>
+        <div class="form-row">
+          <div class="form-group quarter"><label>BP</label><input id="fBp" placeholder="mmHg" /></div>
+          <div class="form-group quarter"><label>HR</label><input id="fHr" type="number" placeholder="bpm" /></div>
+          <div class="form-group quarter"><label>RR</label><input id="fRr" type="number" placeholder="cpm" /></div>
+          <div class="form-group quarter"><label>Temp</label><input id="fTemp" placeholder="°C" /></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group third"><label>Weight (kg)</label><input id="fWeight" type="number" step="0.1" /></div>
+          <div class="form-group third"><label>Height / Length (cm)</label><input id="fHeight" type="number" step="0.1" /></div>
+          <div class="form-group third"><label>BMI (auto)</label><input id="fBmi" readonly placeholder="—" /></div>
+        </div>
+        <div class="form-row module-gate" data-module="pediatric">
+          <div class="form-group half"><label>Head Circumference (cm)</label><input id="fHc" placeholder="when age-appropriate" /></div>
+          <div class="form-group half"><label>O₂ Sat (%)</label><input id="fO2sat" placeholder="%" /></div>
+        </div>
+        <div class="form-row"><div class="form-group full"><label>General Survey</label><textarea id="fGeneral" rows="2" placeholder="Appearance, distress, hydration, consciousness"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>HEENT</label><textarea id="fHeent" rows="2" placeholder="Head, eyes, ears, nose, throat; fontanels if infant"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Neck</label><textarea id="fNeck" rows="1" placeholder="Lymph nodes, thyroid, stiffness…"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Chest / Lungs</label><textarea id="fChest" rows="2" placeholder="Breath sounds, retractions, symmetry"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Cardiovascular</label><textarea id="fHeart" rows="2" placeholder="Rhythm, murmurs, pulses"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Abdomen</label><textarea id="fAbdomen" rows="2" placeholder="Bowel sounds, tenderness, organomegaly, fundal height if OB"></textarea></div></div>
+        <div class="form-row module-gate" data-module="gyn"><div class="form-group full"><label>Pelvic / Speculum / IE (when performed)</label><textarea id="fPelvic" rows="2" placeholder="Only if examined"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Genitourinary</label><textarea id="fGu" rows="1" placeholder="External findings, Tanner stage if relevant"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Musculoskeletal / Extremities</label><textarea id="fExtrem" rows="1" placeholder="Pulses, edema, deformities, capillary refill"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Neurologic</label><textarea id="fNeuro" rows="2" placeholder="Reflexes, tone, cranial nerves, gait"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Skin</label><textarea id="fSkin" rows="1" placeholder="Color, rashes, lesions, turgor"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Other Findings</label><textarea id="fOtherPe" rows="1" placeholder=""></textarea></div></div>
+      </div>
+    </section>
+
+    <!-- STEP 7: Assessment & Plan -->
+    <section class="form-step" data-step="7" data-id="plan" data-title="Assessment & Plan" data-icon="📝">
+      <div class="step-header">
+        <span class="step-badge">Final</span>
+        <h2 class="step-title">Assessment &amp; Plan</h2>
+        <span class="step-counter" data-counter></span>
+      </div>
+      <div class="section-card">
+        <div class="form-row"><div class="form-group full"><label>Assessment / Working Diagnoses</label><textarea id="fAssessment" rows="3" placeholder="Diagnoses, differentials, clinical summary"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Plan</label><textarea id="fPlan" rows="3" placeholder="Work-up, management, medications, follow-up, anticipatory guidance"></textarea></div></div>
+        <div class="form-row"><div class="form-group full"><label>Missing Information / To Obtain</label><textarea id="fMissing" rows="2" placeholder="Auto-suggested incomplete items appear here; edit as needed"></textarea></div></div>
+      </div>
+    </section>
+
+  </form>
+</main>
+
+<div class="fixed-actions">
+  <div class="action-row">
+    <button type="button" class="circle-btn circle-back" id="btnPrev" title="Back">←</button>
+    <span class="action-label" id="nextLabel">Proceed</span>
+    <button type="button" class="circle-btn circle-next" id="btnNext" title="Next">→</button>
+  </div>
+  <div class="action-row">
+    <button type="button" class="circle-btn circle-docx" id="btnDocx" title="Export DOCX"><span class="docx-text">DOCX</span></button>
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTopBtn" type="button" title="Scroll to top">↑</button>
+<div class="toast" id="toast"><span id="toastMsg"></span></div>
+
+<script>
+(function () {
+  const STATE_KEY = 'dhnp:state:v2';
+  const THEME_KEY = 'dhnp-theme';
+
+  /* ── Context engine ── */
+  const ctx = { pediatric: false, gyn: false, ob: false, adult: true };
+
+  function detectContext() {
+    const age = parseFloat(document.getElementById('fAge')?.value);
+    const sex = (document.getElementById('fSex')?.value || '').toLowerCase();
+    const note = ((document.getElementById('fContextNote')?.value || '') + ' ' +
+                  (document.getElementById('fCc')?.value || '') + ' ' +
+                  (document.getElementById('fHpi')?.value || '') + ' ' +
+                  (document.getElementById('dictBox')?.innerText || '')).toLowerCase();
+
+    ctx.pediatric = !isNaN(age) && age < 18;
+    ctx.adult = !ctx.pediatric;
+    ctx.gyn = sex === 'female' && !isNaN(age) && age >= 12 && age <= 55;
+    // Obstetric activation: explicit keywords or G/P filled or LMP present with relevant complaint
+    const pregKeywords = /pregnan|gravida|g\d|missed period|lmp|antenatal|prenatal|fetal|gestation|trimester|quickening|labor|delivery/i;
+    const hasGP = !!(document.getElementById('fGravida')?.value || document.getElementById('fPara')?.value);
+    const hasLmp = !!(document.getElementById('fLmp')?.value);
+    ctx.ob = ctx.gyn && (pregKeywords.test(note) || hasGP || hasLmp);
+
+    // Update badges
+    document.getElementById('badgeAdult')?.classList.toggle('active', ctx.adult);
+    document.getElementById('badgePed')?.classList.toggle('active', ctx.pediatric);
+    document.getElementById('badgeGyn')?.classList.toggle('active', ctx.gyn);
+    document.getElementById('badgeOb')?.classList.toggle('active', ctx.ob);
+
+    // Show/hide module gates
+    document.querySelectorAll('.module-gate[data-module]').forEach(el => {
+      const mod = el.dataset.module;
+      const show = (mod === 'pediatric' && ctx.pediatric) ||
+                   (mod === 'gyn' && ctx.gyn) ||
+                   (mod === 'ob' && ctx.ob);
+      el.classList.toggle('visible', show);
+      // also mark step visibility for nav
+      if (el.classList.contains('form-step')) {
+        el.dataset.hidden = show ? '0' : '1';
+      }
+    });
+
+    rebuildNav();
+    updateMissing();
+    return ctx;
+  }
+
+  /* ── Navigation ── */
+  let activeStep = 0;
+  function getVisibleSteps() {
+    return Array.from(document.querySelectorAll('.form-step')).filter(s => s.dataset.hidden !== '1');
+  }
+  function rebuildNav() {
+    const menu = document.getElementById('sbMenu');
+    if (!menu) return;
+    const steps = getVisibleSteps();
+    menu.innerHTML = steps.map((s, i) => {
+      const num = i + 1;
+      const filled = isStepFilled(s);
+      return `<button type="button" class="sb-step ${s.classList.contains('active') ? 'active' : ''} ${filled ? 'completed' : ''}" data-target="${s.dataset.id}">
+        <span class="sb-num">${num}</span><span class="sb-icon">${s.dataset.icon || '•'}</span>
+        <span class="sb-label">${s.dataset.title || ''}</span></button>`;
+    }).join('');
+    menu.querySelectorAll('.sb-step').forEach(btn => {
+      btn.addEventListener('click', () => goToId(btn.dataset.target));
+    });
+    const pct = steps.length ? Math.round((steps.filter(isStepFilled).length / steps.length) * 100) : 0;
+    document.getElementById('sbProgressFill').style.width = pct + '%';
+    document.getElementById('sbProgressText').textContent = `${steps.filter(isStepFilled).length} / ${steps.length}`;
+    updateFloating();
+  }
+  function isStepFilled(step) {
+    const inputs = step.querySelectorAll('input:not([readonly]), textarea, select');
+    for (const el of inputs) {
+      if (el.value && String(el.value).trim()) return true;
+    }
+    return false;
+  }
+  function goToId(id) {
+    const steps = getVisibleSteps();
+    const idx = steps.findIndex(s => s.dataset.id === id);
+    if (idx >= 0) goToStep(idx);
+  }
+  function goToStep(idx) {
+    const steps = getVisibleSteps();
+    if (idx < 0 || idx >= steps.length) return;
+    activeStep = idx;
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    steps[idx].classList.add('active');
+    steps.forEach((s, i) => {
+      const counter = s.querySelector('[data-counter]');
+      if (counter) counter.textContent = `${i + 1} / ${steps.length}`;
+    });
+    rebuildNav();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function nextStep() {
+    const steps = getVisibleSteps();
+    if (activeStep < steps.length - 1) goToStep(activeStep + 1);
+    else showToast('All visible sections reviewed. Export DOCX when ready.', 'ok');
+  }
+  function prevStep() {
+    if (activeStep > 0) goToStep(activeStep - 1);
+  }
+  function updateFloating() {
+    const steps = getVisibleSteps();
+    const prev = document.getElementById('btnPrev');
+    const next = document.getElementById('btnNext');
+    const label = document.getElementById('nextLabel');
+    if (!prev || !next || !label) return;
+    prev.disabled = activeStep <= 0;
+    if (activeStep < steps.length - 1) {
+      label.textContent = `Next: ${steps[activeStep + 1].dataset.title || ''}`;
+      next.classList.remove('complete'); next.textContent = '→';
+    } else {
+      label.textContent = 'Complete';
+      next.classList.add('complete'); next.textContent = '✓';
+    }
+  }
+
+  /* ── Missing / incomplete ── */
+  function updateMissing() {
+    const missing = [];
+    if (!document.getElementById('fName')?.value) missing.push('Patient name');
+    if (!document.getElementById('fAge')?.value) missing.push('Age');
+    if (!document.getElementById('fSex')?.value) missing.push('Sex');
+    if (!document.getElementById('fCc')?.value) missing.push('Chief complaint');
+    if (!document.getElementById('fHpi')?.value) missing.push('HPI details');
+    if (ctx.pediatric) {
+      if (!document.getElementById('fBirthWeight')?.value) missing.push('Birth weight (pediatric)');
+      if (!document.getElementById('fPedImm')?.value && !document.getElementById('fImm')?.value) missing.push('Immunization status');
+    }
+    if (ctx.ob) {
+      if (!document.getElementById('fLmp')?.value) missing.push('LMP');
+      if (!document.getElementById('fGravida')?.value) missing.push('Gravidity');
+    }
+    if (!document.getElementById('fBp')?.value && !document.getElementById('fHr')?.value) missing.push('Vital signs');
+    const box = document.getElementById('fMissing');
+    if (box && !box.dataset.userEdited) {
+      box.value = missing.length ? 'Still to obtain: ' + missing.join('; ') : 'Core items appear complete.';
+    }
+  }
+
+  /* ── HPI guidance ── */
+  function updateHpiGuidance() {
+    const cc = (document.getElementById('fCc')?.value || '').toLowerCase();
+    const el = document.getElementById('hpiGuidance');
+    if (!el) return;
+    let tips = [];
+    if (/fever|lagnat/.test(cc)) tips = ['When did fever start?', 'Highest temperature recorded?', 'Intermittent or continuous?', 'Chills / rigors?', 'Medications given?', 'Associated symptoms (cough, rash, vomiting…)?'];
+    else if (/pain|sakit|sakit/.test(cc)) tips = ['Location / radiation?', 'Onset (sudden/gradual)?', 'Character (sharp, dull, cramping)?', 'Severity (1–10)?', 'Aggravating / relieving factors?', 'Associated symptoms?'];
+    else if (/cough|ubo/.test(cc)) tips = ['Duration?', 'Productive?', 'Hemoptysis?', 'Dyspnea?', 'Fever?', 'Sick contacts?'];
+    else if (/bleeding|hemorrhage|vaginal/.test(cc)) tips = ['Amount / pads?', 'Duration?', 'Clots?', 'Pain?', 'Last menstrual period?', 'Pregnancy possible?'];
+    else if (cc) tips = ['Onset and duration?', 'Course (improving/worsening)?', 'Associated symptoms?', 'Treatments tried?', 'Pertinent negatives?'];
+    if (ctx.pediatric) tips.push('Feeding / activity change?', 'Urine output?', 'Previous similar episodes?');
+    if (ctx.ob) tips.push('Fetal movement?', 'Contractions?', 'Leakage of fluid?', 'Prenatal care status?');
+    el.innerHTML = tips.length
+      ? `<strong>Suggested next questions</strong><ul>${tips.map(t => `<li>${t}</li>`).join('')}</ul>`
+      : `<strong>Suggested next questions</strong> will appear after you enter a chief complaint.`;
+  }
+
+  /* ── Auto-calcs ── */
+  function calcAgeFromBirth() {
+    const bd = document.getElementById('fBirthdate')?.value;
+    if (!bd) return;
+    const d = new Date(bd), now = new Date();
+    let y = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) y--;
+    if (y >= 0) document.getElementById('fAge').value = y;
+    detectContext();
+  }
+  function calcBmi() {
+    const w = parseFloat(document.getElementById('fWeight')?.value);
+    const h = parseFloat(document.getElementById('fHeight')?.value);
+    if (w > 0 && h > 0) {
+      const bmi = w / Math.pow(h / 100, 2);
+      document.getElementById('fBmi').value = bmi.toFixed(1);
+    }
+  }
+  function calcAogEdc() {
+    const lmp = document.getElementById('fLmp')?.value;
+    if (!lmp) return;
+    const d = new Date(lmp);
+    const now = new Date();
+    const days = Math.floor((now - d) / 86400000);
+    if (days < 0 || days > 300) return;
+    const w = Math.floor(days / 7), r = days % 7;
+    document.getElementById('fAog').value = `${w}w ${r}d`;
+    const edc = new Date(d); edc.setDate(edc.getDate() + 280);
+    document.getElementById('fEdc').value = edc.toISOString().slice(0, 10);
+  }
+
+  /* ── Storage ── */
+  function serialize() {
+    const data = {};
+    document.querySelectorAll('#hnForm input, #hnForm textarea, #hnForm select').forEach(el => {
+      if (el.id) data[el.id] = el.value;
+    });
+    data.__dict = document.getElementById('dictBox')?.innerText || '';
+    data.__ctx = { ...ctx };
+    return data;
+  }
+  function deserialize(data) {
+    if (!data) return;
+    Object.entries(data).forEach(([k, v]) => {
+      if (k.startsWith('__')) return;
+      const el = document.getElementById(k);
+      if (el) el.value = v == null ? '' : v;
+    });
+    if (data.__dict && document.getElementById('dictBox')) {
+      document.getElementById('dictBox').innerText = data.__dict;
+    }
+  }
+  function saveNow() {
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(serialize())); return true; } catch { return false; }
+  }
+  function load() {
+    try {
+      const raw = localStorage.getItem(STATE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  }
+
+  let saveIndicatorTimer = null;
+  function flashSaveIndicator() {
+    const pill = document.getElementById('savePill');
+    const text = document.getElementById('saveText');
+    if (!pill || !text) return;
+    pill.classList.add('saving');
+    text.textContent = 'Saving…';
+    clearTimeout(saveIndicatorTimer);
+    saveIndicatorTimer = setTimeout(() => {
+      pill.classList.remove('saving');
+      text.textContent = 'Saved';
+    }, 450);
+  }
+
+  let saveTimer = null;
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      saveNow();
+      flashSaveIndicator();
+      rebuildNav();
+    }, 300);
+  }
+  // keep alias used elsewhere
+  function save() { scheduleSave(); }
+
+  /* ── Toast ── */
+  let toastT;
+  function showToast(msg, type = '', ms = 3200) {
+    const el = document.getElementById('toast');
+    const t = document.getElementById('toastMsg');
+    if (!el || !t) return;
+    t.textContent = msg;
+    el.className = 'toast show ' + type;
+    clearTimeout(toastT);
+    toastT = setTimeout(() => el.classList.remove('show'), ms);
+  }
+
+  /* ── Smart parser (dictation) ── */
+  function parseAndFill(text) {
+    if (!text || !text.trim()) return [];
+    const extracted = [];
+    const t = text.replace(/\s+/g, ' ').trim();
+    const lower = t.toLowerCase();
+
+    function set(id, val, label) {
+      const el = document.getElementById(id);
+      if (!el || val == null || val === '') return;
+      el.value = val;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.classList.add('field-flash');
+      el.addEventListener('animationend', () => el.classList.remove('field-flash'), { once: true });
+      extracted.push({ id, label: label || id, value: val });
+    }
+
+    // Age + sex patterns
+    let m = t.match(/(\d+)\s*[-–]?\s*year[- ]?old\s+(boy|girl|male|female|man|woman)/i);
+    if (m) {
+      set('fAge', m[1], 'Age');
+      const s = m[2].toLowerCase();
+      set('fSex', /boy|male|man/.test(s) ? 'Male' : 'Female', 'Sex');
+    }
+    m = t.match(/(\d+)\s*[-–]?\s*year[- ]?old/i);
+    if (m && !document.getElementById('fAge').value) set('fAge', m[1], 'Age');
+
+    // Informant
+    m = t.match(/(?:informant|according to|history from|per)\s+(?:the\s+)?(mother|father|guardian|grandmother|grandfather|patient)/i);
+    if (m) set('fInformant', m[1].charAt(0).toUpperCase() + m[1].slice(1), 'Informant');
+
+    // Name (simple)
+    m = t.match(/(?:patient(?:'s)?\s+name\s+is|name\s+is)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/);
+    if (m) set('fName', m[1], 'Name');
+
+    // Chief complaint / duration
+    m = t.match(/(?:chief complaint|presents? with|c\/o|complaining of)\s+(.+?)(?:\s+for\s+(\d+\s*(?:day|days|week|weeks|month|months)))?(?:\.|$)/i);
+    if (m) {
+      set('fCc', m[1].trim() + (m[2] ? ` for ${m[2]}` : ''), 'Chief complaint');
+    }
+    // Fever pattern
+    m = t.match(/fever\s+(?:for\s+)?(\d+)\s*(day|days|week|weeks)/i);
+    if (m) {
+      const cc = document.getElementById('fCc');
+      if (!cc.value) set('fCc', `Fever for ${m[1]} ${m[2]}`, 'Chief complaint');
+    }
+
+    // Append remaining narrative to HPI if not already rich
+    const hpi = document.getElementById('fHpi');
+    if (hpi && t.length > 40 && (!hpi.value || hpi.value.length < 20)) {
+      set('fHpi', t, 'HPI');
+    }
+
+    // G P
+    m = t.match(/\bG\s*(\d+)\s*P\s*(\d+)/i);
+    if (m) { set('fGravida', m[1], 'Gravida'); set('fPara', m[2], 'Para'); }
+    m = t.match(/gravida\s*(\d+)/i); if (m) set('fGravida', m[1], 'Gravida');
+    m = t.match(/para\s*(\d+)/i); if (m) set('fPara', m[1], 'Para');
+
+    // LMP
+    m = t.match(/(?:lmp|last menstrual period)\s*(?:was|is|:)?\s*([0-9]{4}-[0-9]{2}-[0-9]{2}|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|[A-Za-z]+\s+\d{1,2})/i);
+    if (m) {
+      // leave free text if not ISO; user can fix
+      const el = document.getElementById('fLmp');
+      if (el && /^\d{4}-\d{2}-\d{2}$/.test(m[1])) set('fLmp', m[1], 'LMP');
+    }
+
+    // Appetite / intake (pediatric)
+    if (/decreased appetite|poor appetite|anorexia/i.test(t)) {
+      const h = document.getElementById('fHpi');
+      if (h && !/appetite/i.test(h.value)) h.value = (h.value ? h.value + ' ' : '') + 'Decreased appetite.';
+    }
+    if (/still drinking|good oral intake|taking fluids/i.test(t)) {
+      const h = document.getElementById('fHpi');
+      if (h && !/drinking|intake/i.test(h.value)) h.value = (h.value ? h.value + ' ' : '') + 'Still drinking well.';
+    }
+
+    // Render tags
+    const box = document.getElementById('extractedTags');
+    if (box) {
+      box.innerHTML = extracted.length
+        ? extracted.map(e => `<span class="ext-tag">${e.label}: ${String(e.value).slice(0, 36)}</span>`).join('')
+        : '<span style="font-size:12px;color:var(--text3);font-style:italic">No new fields matched</span>';
+    }
+
+    detectContext();
+    save();
+    updateHpiGuidance();
+    if (extracted.length) showToast(`Filled ${extracted.length} field(s)`, 'ok');
+    return extracted;
+  }
+
+  /* ── Speech ── */
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null, listening = false, userStopped = false;
+  function startMic() {
+    if (!SpeechRecognition) { showToast('Speech recognition not supported (use Chrome/Edge)', 'err'); return; }
+    if (!recognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = navigator.language || 'en-PH';
+      recognition.onresult = (e) => {
+        let final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          if (e.results[i].isFinal) final += e.results[i][0].transcript;
+        }
+        if (final.trim()) {
+          const box = document.getElementById('dictBox');
+          const cur = box.innerText || '';
+          box.innerText = (cur ? cur + ' ' : '') + final.trim();
+          parseAndFill(final.trim());
+        }
+      };
+      recognition.onend = () => {
+        if (listening && !userStopped) try { recognition.start(); } catch {}
+        else {
+          listening = false;
+          document.getElementById('dictMicBtn').textContent = '🎙 Start Dictation';
+          document.getElementById('dictStatus').textContent = 'Ready';
+          document.getElementById('dictStatus').classList.remove('listening');
+        }
+      };
+      recognition.onerror = (e) => { if (e.error !== 'no-speech') showToast('Mic: ' + e.error, 'err'); };
+    }
+    userStopped = false; listening = true;
+    try { recognition.start(); } catch {}
+    document.getElementById('dictMicBtn').textContent = '⏹ Stop';
+    document.getElementById('dictStatus').textContent = 'Listening…';
+    document.getElementById('dictStatus').classList.add('listening');
+  }
+  function stopMic() {
+    userStopped = true; listening = false;
+    try { recognition?.stop(); } catch {}
+    document.getElementById('dictMicBtn').textContent = '🎙 Start Dictation';
+    document.getElementById('dictStatus').textContent = 'Ready';
+    document.getElementById('dictStatus').classList.remove('listening');
+  }
+
+  /* ── CSV export ── */
+  function generateCsv() {
+    const d = serialize();
+    const headers = [
+      'exported_at','name','age','sex','birthdate','address','informant','reliability',
+      'contact','hosp','encounter','occupation','civil','gender','context_note',
+      'cc','hpi','pmh','psh','meds','allergies','fh','sh','imm','ros',
+      'mat_age','mat_gp','pnc','prenatal_comp','aog_birth','mode_delivery','place_delivery',
+      'birth_weight','birth_length','apgar','neo_comp','bf','formula','weaning','current_diet',
+      'gross_motor','fine_motor','language','social','ped_imm',
+      'menarche','regular','duration','pads','dysmenorrhea','lmp','sex_hx','ocp','aub','pap','gyn_prev',
+      'gravida','para','tpal','aog','edc','pnc_count','preg_comp','prev_preg','curr_preg',
+      'bp','hr','rr','temp','weight','height','bmi','hc','o2sat',
+      'general','heent','neck','chest','heart','abdomen','pelvic','gu','extrem','neuro','skin','other_pe',
+      'assessment','plan','missing',
+      'ctx_pediatric','ctx_gyn','ctx_ob','dict_text'
+    ];
+    function esc(v) {
+      if (v == null) return '';
+      const s = String(v).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const exported_at = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}+08:00`;
+    const row = {
+      exported_at,
+      name: d.fName, age: d.fAge, sex: d.fSex, birthdate: d.fBirthdate,
+      address: d.fAddress, informant: d.fInformant, reliability: d.fReliability,
+      contact: d.fContact, hosp: d.fHosp, encounter: d.fEncounter,
+      occupation: d.fOccupation, civil: d.fCivil, gender: d.fGender, context_note: d.fContextNote,
+      cc: d.fCc, hpi: d.fHpi, pmh: d.fPmh, psh: d.fPsh, meds: d.fMeds, allergies: d.fAllergies,
+      fh: d.fFh, sh: d.fSh, imm: d.fImm, ros: d.fRos,
+      mat_age: d.fMatAge, mat_gp: d.fMatGP, pnc: d.fPnc, prenatal_comp: d.fPrenatalComp,
+      aog_birth: d.fAogBirth, mode_delivery: d.fModeDelivery, place_delivery: d.fPlaceDelivery,
+      birth_weight: d.fBirthWeight, birth_length: d.fBirthLength, apgar: d.fApgar, neo_comp: d.fNeoComp,
+      bf: d.fBf, formula: d.fFormula, weaning: d.fWeaning, current_diet: d.fCurrentDiet,
+      gross_motor: d.fGrossMotor, fine_motor: d.fFineMotor, language: d.fLanguage, social: d.fSocial, ped_imm: d.fPedImm,
+      menarche: d.fMenarche, regular: d.fRegular, duration: d.fDuration, pads: d.fPads,
+      dysmenorrhea: d.fDysmenorrhea, lmp: d.fLmp, sex_hx: d.fSexHx, ocp: d.fOcp, aub: d.fAub, pap: d.fPap, gyn_prev: d.fGynPrev,
+      gravida: d.fGravida, para: d.fPara, tpal: d.fTpal, aog: d.fAog, edc: d.fEdc,
+      pnc_count: d.fPncCount, preg_comp: d.fPregComp, prev_preg: d.fPrevPreg, curr_preg: d.fCurrPreg,
+      bp: d.fBp, hr: d.fHr, rr: d.fRr, temp: d.fTemp, weight: d.fWeight, height: d.fHeight, bmi: d.fBmi, hc: d.fHc, o2sat: d.fO2sat,
+      general: d.fGeneral, heent: d.fHeent, neck: d.fNeck, chest: d.fChest, heart: d.fHeart,
+      abdomen: d.fAbdomen, pelvic: d.fPelvic, gu: d.fGu, extrem: d.fExtrem, neuro: d.fNeuro, skin: d.fSkin, other_pe: d.fOtherPe,
+      assessment: d.fAssessment, plan: d.fPlan, missing: d.fMissing,
+      ctx_pediatric: ctx.pediatric ? '1' : '0', ctx_gyn: ctx.gyn ? '1' : '0', ctx_ob: ctx.ob ? '1' : '0',
+      dict_text: d.__dict || ''
+    };
+    const csv = '\uFEFF' + headers.join(',') + '\n' + headers.map(h => esc(row[h])).join(',');
+    const safeName = (d.fName || 'unnamed').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 30) || 'unnamed';
+    const dateStr = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `HnP_${safeName}_${dateStr}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
+    showToast('CSV exported ✓', 'ok');
+  }
+
+  /* ── DOCX (simple HTML-based) ── */
+  function generateDocx() {
+    const d = serialize();
+    if (!d.fName) {
+      showToast('Enter patient name before exporting', 'err');
+      goToId('demo');
+      return;
+    }
+    const sections = [];
+    function add(title, rows) {
+      sections.push(`<h2 style="color:#1a3a5c;border-bottom:1px solid #ccc;padding-bottom:3px;margin:14px 0 6px">${title}</h2>`);
+      rows.forEach(([k, v]) => {
+        if (v && String(v).trim()) sections.push(`<div style="margin:2px 0"><strong>${k}:</strong> ${esc(v)}</div>`);
+      });
+    }
+    function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    add('Patient Demographics', [
+      ['Name', d.fName], ['Age', d.fAge], ['Sex', d.fSex], ['Birthdate', d.fBirthdate],
+      ['Address', d.fAddress], ['Informant', d.fInformant], ['Reliability', d.fReliability],
+      ['Contact', d.fContact], ['Hospital #', d.fHosp], ['Encounter', d.fEncounter]
+    ]);
+    add('Chief Complaint & HPI', [['CC', d.fCc], ['HPI', d.fHpi]]);
+    add('Past / Family / Social', [
+      ['PMH', d.fPmh], ['PSH', d.fPsh], ['Meds', d.fMeds], ['Allergies', d.fAllergies],
+      ['Family', d.fFh], ['Social', d.fSh], ['Immunizations', d.fImm], ['ROS', d.fRos]
+    ]);
+    if (ctx.pediatric) {
+      add('Pediatric History', [
+        ['Maternal age', d.fMatAge], ['Prenatal care', d.fPnc], ['Prenatal complications', d.fPrenatalComp],
+        ['AOG at birth', d.fAogBirth], ['Mode of delivery', d.fModeDelivery],
+        ['Birth weight', d.fBirthWeight], ['APGAR', d.fApgar], ['Neonatal complications', d.fNeoComp],
+        ['Breastfeeding', d.fBf], ['Formula', d.fFormula], ['Weaning', d.fWeaning],
+        ['Gross motor', d.fGrossMotor], ['Fine motor', d.fFineMotor],
+        ['Language', d.fLanguage], ['Social', d.fSocial], ['Immunization detail', d.fPedImm]
+      ]);
+    }
+    if (ctx.gyn) {
+      add('Gynecologic History', [
+        ['Menarche', d.fMenarche], ['Cycle', d.fRegular], ['Duration', d.fDuration],
+        ['LMP', d.fLmp], ['Dysmenorrhea', d.fDysmenorrhea], ['Contraception', d.fOcp],
+        ['Sexual history', d.fSexHx], ['Previous gyn conditions', d.fGynPrev]
+      ]);
+    }
+    if (ctx.ob) {
+      add('Obstetric History', [
+        ['G', d.fGravida], ['P', d.fPara], ['TPAL', d.fTpal], ['AOG', d.fAog], ['EDC', d.fEdc],
+        ['Prenatal visits', d.fPncCount], ['Complications', d.fPregComp],
+        ['Previous outcomes', d.fPrevPreg], ['Current pregnancy', d.fCurrPreg]
+      ]);
+    }
+    add('Physical Examination', [
+      ['BP', d.fBp], ['HR', d.fHr], ['RR', d.fRr], ['Temp', d.fTemp],
+      ['Weight', d.fWeight], ['Height', d.fHeight], ['BMI', d.fBmi], ['HC', d.fHc],
+      ['General', d.fGeneral], ['HEENT', d.fHeent], ['Neck', d.fNeck],
+      ['Chest', d.fChest], ['Heart', d.fHeart], ['Abdomen', d.fAbdomen],
+      ['Pelvic', d.fPelvic], ['GU', d.fGu], ['Extremities', d.fExtrem],
+      ['Neuro', d.fNeuro], ['Skin', d.fSkin], ['Other', d.fOtherPe]
+    ]);
+    add('Assessment & Plan', [
+      ['Assessment', d.fAssessment], ['Plan', d.fPlan], ['Missing / to obtain', d.fMissing]
+    ]);
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>H&P – ${esc(d.fName)}</title>
+<style>body{font-family:Georgia,serif;font-size:11pt;line-height:1.4;color:#1a1a1a;max-width:800px;margin:1in auto}
+h1{font-size:18pt;color:#1a3a5c;border-bottom:2px solid #1a3a5c;padding-bottom:4px}
+.sub{font-size:10pt;color:#555;font-style:italic;margin-bottom:12px}</style></head><body>
+<h1>HISTORY &amp; PHYSICAL EXAMINATION</h1>
+<div class="sub">CSU SOM MD201 · Dynamic H&amp;P · Generated ${new Date().toLocaleString()}
+${ctx.pediatric ? ' · Pediatric' : ''}${ctx.gyn ? ' · Gynecologic' : ''}${ctx.ob ? ' · Obstetric' : ''}</div>
+${sections.join('\n')}
+</body></html>`;
+
+    const blob = new Blob([html], { type: 'application/msword' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `HnP_${(d.fName || 'patient').replace(/\W+/g, '_').slice(0, 30)}_${new Date().toISOString().slice(0, 10)}.doc`;
+    a.click();
+    showToast('Document generated', 'ok');
+  }
+
+  /* ── Theme ── */
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem(THEME_KEY, t); } catch {}
+    const icon = document.getElementById('themeIcon');
+    const label = document.getElementById('themeLabel');
+    if (icon) icon.textContent = t === 'dark' ? '☀' : '🌙';
+    if (label) label.textContent = t === 'dark' ? 'Light Mode' : 'Dark Mode';
+  }
+  function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  }
+
+  /* ── Reset ── */
+  function resetAll() {
+    if (!confirm('Clear all fields and context?')) return;
+    document.querySelectorAll('#hnForm input, #hnForm textarea, #hnForm select').forEach(el => {
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+      else el.value = '';
+    });
+    document.getElementById('dictBox').innerText = '';
+    document.getElementById('extractedTags').innerHTML = '<span style="font-size:12px;color:var(--text3);font-style:italic">Matched fields appear here…</span>';
+    try { localStorage.removeItem(STATE_KEY); } catch {}
+    detectContext();
+    goToStep(0);
+    showToast('Form reset', 'ok');
+  }
+
+  /* ── Boot ── */
+  function boot() {
+    // Restore
+    const cached = load();
+    if (cached) {
+      deserialize(cached);
+      showToast('Restored previous session', 'ok', 2500);
+    }
+
+    // Events
+    document.getElementById('fAge')?.addEventListener('input', () => { detectContext(); save(); });
+    document.getElementById('fSex')?.addEventListener('change', () => { detectContext(); save(); });
+    document.getElementById('fBirthdate')?.addEventListener('change', calcAgeFromBirth);
+    document.getElementById('fWeight')?.addEventListener('input', calcBmi);
+    document.getElementById('fHeight')?.addEventListener('input', calcBmi);
+    document.getElementById('fLmp')?.addEventListener('change', () => { calcAogEdc(); detectContext(); });
+    document.getElementById('fCc')?.addEventListener('input', () => { updateHpiGuidance(); detectContext(); });
+    document.getElementById('fContextNote')?.addEventListener('input', detectContext);
+    document.getElementById('fMissing')?.addEventListener('input', function () { this.dataset.userEdited = '1'; });
+
+    document.getElementById('hnForm')?.addEventListener('input', () => { scheduleSave(); updateMissing(); }, { passive: true });
+    document.getElementById('hnForm')?.addEventListener('change', () => { scheduleSave(); updateMissing(); }, { passive: true });
+
+    document.getElementById('btnPrev')?.addEventListener('click', prevStep);
+    document.getElementById('btnNext')?.addEventListener('click', nextStep);
+    document.getElementById('btnDocx')?.addEventListener('click', generateDocx);
+    document.getElementById('csvBtn')?.addEventListener('click', generateCsv);
+    document.getElementById('themeBtn')?.addEventListener('click', toggleTheme);
+    document.getElementById('resetBtn')?.addEventListener('click', resetAll);
+
+    // Scroll-to-top
+    const scrollBtn = document.getElementById('scrollTopBtn');
+    if (scrollBtn) {
+      window.addEventListener('scroll', () => scrollBtn.classList.toggle('visible', window.scrollY > 400), { passive: true });
+      scrollBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
+    document.getElementById('sbToggle')?.addEventListener('click', () => document.body.classList.toggle('sb-collapsed'));
+    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+      document.getElementById('sidebar').classList.add('open');
+      document.body.classList.add('sb-mobile-open');
+    });
+    document.getElementById('sbBackdrop')?.addEventListener('click', () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.body.classList.remove('sb-mobile-open');
+    });
+
+    // Dictation
+    document.getElementById('dictMicBtn')?.addEventListener('click', () => listening ? stopMic() : startMic());
+    document.getElementById('dictParseBtn')?.addEventListener('click', () => parseAndFill(document.getElementById('dictBox').innerText));
+    document.getElementById('dictClearBtn')?.addEventListener('click', () => {
+      document.getElementById('dictBox').innerText = '';
+      document.getElementById('extractedTags').innerHTML = '<span style="font-size:12px;color:var(--text3);font-style:italic">Matched fields appear here…</span>';
+    });
+    document.querySelectorAll('.tpl-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const box = document.getElementById('dictBox');
+        const cur = box.innerText.trim();
+        box.innerText = (cur ? cur + '\n\n' : '') + (btn.dataset.tpl || '');
+        box.focus();
+      });
+    });
+    let parseTimer;
+    document.getElementById('dictBox')?.addEventListener('input', () => {
+      clearTimeout(parseTimer);
+      parseTimer = setTimeout(() => {
+        const txt = document.getElementById('dictBox').innerText.trim();
+        if (txt.length > 20) parseAndFill(txt);
+      }, 1000);
+    });
+
+    document.addEventListener('keydown', e => {
+      const tag = (e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || e.target.isContentEditable) return;
+      if (e.key === 'ArrowRight') nextStep();
+      if (e.key === 'ArrowLeft') prevStep();
+    });
+
+    applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+    detectContext();
+    goToStep(0);
+    updateHpiGuidance();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+</body>
+</html>
