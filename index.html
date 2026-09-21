@@ -1,26 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CSU SOM · MD201 · Dynamic H&P</title>
-<style>
-  body { font-family: Georgia, serif; max-width: 40rem; margin: 3rem auto; padding: 0 1.25rem; line-height: 1.6; color: #2a1f18; background: #faf6ee; }
-  a { color: #A13D2C; }
-  code { background: #F2E4C7; padding: 0.1em 0.35em; border-radius: 3px; }
-  .box { border: 1px solid rgba(161,61,44,.25); border-radius: 8px; padding: 1rem 1.25rem; background: #fff; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#123b36" />
+  <meta name="description" content="CSU SOM MD201 and MD202 clinical digital forms." />
+  <title>CSU SOM · Clinical Digital Forms</title>
+  <style>
+    :root {
+      --ink: #17332f;
+      --muted: #5b706b;
+      --green: #123b36;
+      --green-light: #e8f1ee;
+      --gold: #d39a3d;
+      --cream: #f8f5ee;
+      --white: #ffffff;
+      --line: #dce6e1;
+      --shadow: 0 18px 45px rgba(18, 59, 54, .10);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--cream);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; }
+    .hero {
+      padding: 4.5rem 1.25rem 6rem;
+      color: var(--white);
+      background: linear-gradient(135deg, #123b36 0%, #1d5b50 58%, #347568 100%);
+    }
+    .wrap { width: min(1080px, 100%); margin: 0 auto; }
+    .eyebrow {
+      margin: 0 0 .8rem;
+      color: #f4cf8a;
+      font-size: .8rem;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    h1, h2 { line-height: 1.15; }
+    h1 { max-width: 720px; margin: 0; font-family: Georgia, serif; font-size: clamp(2.4rem, 6vw, 4.8rem); font-weight: 500; }
+    .intro { max-width: 680px; margin: 1.3rem 0 0; color: #e1efeb; font-size: 1.1rem; }
+    .content { padding: 0 1.25rem 4rem; }
+    .forms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 1rem;
+      margin-top: -3rem;
+      position: relative;
+    }
+    .card {
+      display: flex;
+      min-height: 235px;
+      flex-direction: column;
+      padding: 1.5rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--white);
+      box-shadow: var(--shadow);
+    }
+    .card h2 { margin: 0 0 .65rem; font-family: Georgia, serif; font-size: 1.45rem; }
+    .card p { flex: 1; margin: 0 0 1.25rem; color: var(--muted); font-size: .95rem; }
+    .button {
+      display: inline-block;
+      align-self: flex-start;
+      padding: .65rem 1rem;
+      border-radius: 7px;
+      color: var(--white);
+      background: var(--green);
+      font-size: .9rem;
+      font-weight: 750;
+      text-decoration: none;
+    }
+    .button:hover, .button:focus-visible { background: #0a2925; outline: 3px solid #f4cf8a; outline-offset: 2px; }
+    .about {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 2rem;
+      margin-top: 4rem;
+      padding: 2rem;
+      border-radius: 14px;
+      background: var(--green-light);
+    }
+    .about h2 { margin: 0 0 .6rem; font-family: Georgia, serif; font-size: 1.65rem; }
+    .about p { margin: 0; color: var(--muted); }
+    .notes { margin: 0; padding-left: 1.2rem; color: var(--muted); }
+    footer { padding: 2rem 1.25rem 3rem; color: var(--muted); font-size: .85rem; text-align: center; }
+    @media (max-width: 680px) {
+      .hero { padding-top: 3.25rem; }
+      .about { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-  <h1>CSU SOM · MD201 · Dynamic History & Physical</h1>
-  <div class="box">
-    <p>Full single-file app is in this repository at:</p>
-    <p><a href="forms/Dynamic_HnP.html"><code>forms/Dynamic_HnP.html</code></a></p>
-    <p>Clone the repo and open that file in <strong>Chrome</strong> or <strong>Edge</strong> (speech recognition works best there).</p>
-    <pre style="font-size:13px;background:#f7f1e6;padding:12px;border-radius:6px;overflow:auto">git clone https://github.com/mdfl212/csu-md-clinical-forms.git
-cd csu-md-clinical-forms
-open forms/Dynamic_HnP.html   # or double-click</pre>
-  </div>
-  <p style="margin-top:1.5rem;font-size:14px;color:#7a6a58">Also see <a href="README.md">README.md</a> for Community Health Questionnaire, OB-GYN Hx/PE, and Pediatric forms.</p>
+  <header class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Caraga State University · School of Medicine</p>
+      <h1>Clinical digital forms for MD201 &amp; MD202</h1>
+      <p class="intro">Structured, browser-based tools for clinical skills practice, history taking, physical examination, and community health assessment.</p>
+    </div>
+  </header>
+
+  <main class="content wrap">
+    <section class="forms" aria-label="Clinical forms">
+      <article class="card">
+        <h2>Dynamic History &amp; Physical</h2>
+        <p>Context-aware H&amp;P simulator with patient demographics, speech-to-text, autosave, structured history and physical examination sections, and export tools.</p>
+        <a class="button" href="forms/Dynamic_HnP.html">Open Dynamic H&amp;P →</a>
+      </article>
+      <article class="card">
+        <h2>Community Health Questionnaire</h2>
+        <p>Guided and classic community assessment workflows for Brgy. Abilan Health Center, including dictation and CSV/DOCX export.</p>
+        <a class="button" href="forms/Community_Health_Questionnaire.html">Open questionnaire →</a>
+      </article>
+      <article class="card">
+        <h2>OB-GYN History &amp; PE</h2>
+        <p>Stepped obstetric history and physical examination form with LMP, AOG, EDC, coding search, and document export.</p>
+        <a class="button" href="forms/OBGYN_HxPE.html">Open OB-GYN form →</a>
+      </article>
+      <article class="card">
+        <h2>Pediatric History &amp; PE</h2>
+        <p>Digital pediatric history and physical examination structure for clinical skills practice.</p>
+        <a class="button" href="forms/Pediatric_HxPE.html">Open pediatric form →</a>
+      </article>
+    </section>
+
+    <section class="about" aria-labelledby="about-title">
+      <div>
+        <h2 id="about-title">Designed for learning</h2>
+        <p>These are self-contained HTML applications. No account or backend is required. Form data is saved locally in your browser and remains on your device.</p>
+      </div>
+      <ul class="notes">
+        <li>Use Chrome or Edge for speech recognition.</li>
+        <li>Open a form to begin; data autosaves locally.</li>
+        <li>Educational use for CSU SOM MD201–MD202.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <a href="README.md">View project documentation</a> · <a href="https://github.com/mdfl212/csu-md-clinical-forms">GitHub repository</a>
+  </footer>
 </body>
 </html>
